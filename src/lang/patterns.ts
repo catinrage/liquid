@@ -114,6 +114,14 @@ const keywords: Pattern[] = [
 const identifiers: Pattern[] = [new Pattern('IDENTIFIER', /^[a-zA-Z_][a-zA-Z0-9_]*/)];
 
 /**
+ * Lexical patterns for comments used in the language interpreter.
+ * Each `Pattern` represents a comment token.
+ *
+ * @type {Pattern[]}
+ */
+const comments: Pattern[] = [new Pattern('COMMENT', [/^\/\/[^\n]*\n?/g, /^\/\*[\s\S]*?\*\//g], ['Junk'])];
+
+/**
  * A unified collection of all lexical patterns, including literals, operators, punctuations, keywords, and identifiers.
  *
  * @type {Pattern[]}
@@ -128,4 +136,5 @@ export default [
   ...operators.assignment,
   ...punctuations,
   ...identifiers,
+  ...comments,
 ] as const;

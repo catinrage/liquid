@@ -43,6 +43,7 @@ export class Pattern {
       | 'Operator/Assignment'
       | 'Operator/Comparison'
       | 'Literal'
+      | 'Junk'
     )[] = [],
     public readonly parser: (lexeme: string) => unknown = () => ({}),
   ) {}

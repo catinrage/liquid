@@ -6,12 +6,12 @@ import { wrapInArray, LiquidErrorInstance } from '../common/helpers';
  */
 class Lexer {
   /**
-   * The input string to be tokenized.
+   * The input string to be tokenized (source code).
    */
   private input: string;
 
   /**
-   * The patterns used for tokenization.
+   * The reference patterns used for tokenization.
    */
   private patterns: readonly Pattern[];
 
@@ -56,42 +56,29 @@ class Lexer {
   }
 
   /**
-   * Stripes all comments from the input string.
-   * FIXME: will purge comments in the middle of sting, for example it purges x = "hello # some text"
-   */
-  private purge(): string {
-    return this.input.replace(/^#[^\n]*\n?/g, '').replace(/#[^\n]*\n?/g, '');
-  }
-
-  /**
-   * Tokenizes the entire input string.
+   * Tokenizes the entire input string, producing an array of tokens based on the provided patterns.
+   * @returns An array of tokens.
    */
   tokenize(): Token[] {
     const tokens: Token[] = [];
     let location = 1;
-    let stream: string = this.purge();
-
+    let stream: string = this.input;
     while (stream.length) {
       const omitted = this.patterns.find((pattern) => pattern.name === 'OMITTED');
       while (omitted && !Array.isArray(omitted.regex) && omitted.regex.test(stream[0])) {
         location++;
         stream = stream.slice(1);
       }
-
       let cursor = 1;
       let longestMatch: Token | null = null;
-
       while (cursor <= stream.length) {
         const batch = stream.slice(0, cursor);
         const token = this.tokenizeBatch(batch, location);
-
         if (token && (!longestMatch || token.lexeme.length > longestMatch?.lexeme.length)) {
           longestMatch = token;
         }
-
         cursor++;
       }
-
       if (longestMatch) {
         tokens.push(longestMatch);
         location += longestMatch.lexeme.length;
@@ -102,7 +89,6 @@ class Lexer {
         }
       }
     }
-
     tokens.push({
       type: 'EOF',
       lexeme: '\0',
@@ -110,8 +96,16 @@ class Lexer {
       start: location,
       end: location,
     });
+    return this.purge(tokens);
+  }
 
-    return tokens;
+  /**
+   * Removes all comment tokens from the token stream.
+   * @param tokens The token stream to be purged.
+   * @returns The purged token stream.
+   */
+  private purge(tokens: Token[]): Token[] {
+    return tokens.filter((token) => token.type !== 'COMMENT');
   }
 }
 

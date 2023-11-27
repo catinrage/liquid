@@ -75,9 +75,41 @@ describe('Lexer/Tokenizer', () => {
     expect(L2.tokens[5].end).toEqual(8);
     expect(L3.tokens[7].end).toEqual(40);
   });
-  test('expect error', () => {
+  test('expect error for missing "', () => {
     expect(() => {
       const LL = new Lexer(`"dad`, patterns);
     }).toThrow();
+  });
+  test('comment in the middle of string', () => {
+    const LL = new Lexer(`x = "hello // some text"`, patterns);
+    expect(LL.tokens[2].literal).toBe('hello // some text');
+  });
+  test('purging single line comments', () => {
+    const LL = new Lexer(
+      `// this is a comment
+    x = 1 + 2;`,
+      patterns,
+    );
+    expect(LL.tokens.length).toBe(7);
+  });
+  test('ultimate comment test', () => {
+    const LL = new Lexer(
+      `// some comment // dawd
+x = "// hello" // hello "mester " // " 5 + 3;"
+///`,
+      patterns,
+    );
+    expect(LL.tokens.length).toBe(4);
+  });
+  test('multiline comment test', () => {
+    const LL = new Lexer(
+      `/* 
+  this is a mult
+  line comment
+*/
+x = y`,
+      patterns,
+    );
+    expect(LL.tokens.length).toBe(4);
   });
 });
