@@ -44,6 +44,7 @@ class Lexer {
         if (match) {
           return {
             type: pattern.name,
+            groups: pattern.groups,
             lexeme: match[0],
             literal: pattern.parser(match[0]),
             start: location,
@@ -91,6 +92,7 @@ class Lexer {
     }
     tokens.push({
       type: 'EOF',
+      groups: [],
       lexeme: '\0',
       literal: {},
       start: location,

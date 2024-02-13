@@ -1,4 +1,15 @@
+import { Pattern, Token } from '../common';
+import { LiquidErrorInstance } from '../common/helpers';
 import type { Grammar } from '../common/types';
+
+type Node = {
+  payload: string;
+  children: Node[];
+};
+
+export class CST {
+  constructor(public root: Node) {}
+}
 
 /**
  * Represents a LL(1) parser.
@@ -8,6 +19,10 @@ export class Parser {
    * The grammar to be used for parsing.
    */
   private grammar: Grammar;
+  /**
+   * The patterns to be used for parsing.
+   */
+  private patterns: readonly Pattern[];
   /**
    * The firsts for each variable in the grammar.
    */
@@ -33,8 +48,9 @@ export class Parser {
    * Creates a new instance of the Parser class.
    * @param grammar The grammar to be used for parsing.
    */
-  constructor(grammar: Grammar) {
+  constructor(grammar: Grammar, patterns: readonly Pattern[]) {
     this.grammar = grammar;
+    this.patterns = patterns;
 
     const { firsts, follows, variables, terminals } = this.derive(this.grammar);
 
@@ -57,7 +73,7 @@ export class Parser {
       .map((production) => production.rhs)
       .flat()
       .filter((symbol) => !variables.includes(symbol))
-      .filter((symbol) => symbol !== 'ε')
+      .filter((symbol) => symbol !== '_EPS_')
       .filter((symbol, index, arr) => arr.indexOf(symbol) === index);
 
     const firsts: Record<string, string[]> = {};
@@ -84,10 +100,10 @@ export class Parser {
             break;
           } else {
             const firstsOfSymbol = firsts[symbol];
-            if (firstsOfSymbol.includes('ε')) {
+            if (firstsOfSymbol.includes('_EPS_')) {
               const oldLength = firsts[lhs].length;
               firsts[lhs] = [
-                ...new Set([...firsts[lhs], ...firstsOfSymbol.filter((first) => first !== 'ε')]),
+                ...new Set([...firsts[lhs], ...firstsOfSymbol.filter((first) => first !== '_EPS_')]),
               ];
               if (firsts[lhs].length !== oldLength) {
                 changed = true;
@@ -106,7 +122,7 @@ export class Parser {
     }
 
     // calculate follow sets
-    follows[grammar[0].lhs].push('$');
+    follows[grammar[0].lhs].push('EOF');
     changed = true;
     while (changed) {
       changed = false;
@@ -124,14 +140,14 @@ export class Parser {
             } else {
               if (variables.includes(rhs[i + 1])) {
                 const firstsOfNext = firsts[rhs[i + 1]];
-                if (firstsOfNext.includes('ε')) {
+                if (firstsOfNext.includes('_EPS_')) {
                   // Check if firstOfNext is defined
                   const oldLength = follows[symbol].length;
                   follows[symbol] = [
                     ...new Set([
                       ...follows[symbol],
                       ...follows[rhs[i + 1]],
-                      ...firstsOfNext.filter((first) => first !== 'ε'),
+                      ...firstsOfNext.filter((first) => first !== '_EPS_'),
                     ]),
                   ];
                   if (follows[symbol].length !== oldLength) {
@@ -169,8 +185,8 @@ export class Parser {
    */
   private calcFirsts(production: string[], derivedFirsts: Record<string, string[]>, terminals: string[]) {
     const calculatedFirsts: string[] = [];
-    if (production.length === 1 && production[0] === 'ε') {
-      return ['ε'];
+    if (production.length === 1 && production[0] === '_EPS_') {
+      return ['_EPS_'];
     }
     for (const symbol of production) {
       if (terminals.includes(symbol)) {
@@ -178,8 +194,8 @@ export class Parser {
         break;
       } else {
         const firstsOfSymbol = derivedFirsts[symbol];
-        if (firstsOfSymbol.includes('ε')) {
-          calculatedFirsts.push(...firstsOfSymbol.filter((first) => first !== 'ε'));
+        if (firstsOfSymbol.includes('_EPS_')) {
+          calculatedFirsts.push(...firstsOfSymbol.filter((first) => first !== '_EPS_'));
         } else {
           calculatedFirsts.push(...firstsOfSymbol);
           break;
@@ -204,12 +220,12 @@ export class Parser {
     for (const [pn, production] of grammar.entries()) {
       const { lhs, rhs } = production;
       if (!table[lhs]) table[lhs] = {};
-      for (const terminal of [...terminals, '$']) {
+      for (const terminal of [...terminals, 'EOF']) {
         if (!table[lhs][terminal]) table[lhs][terminal] = -1;
       }
 
       for (const first of this.calcFirsts(rhs, derivedFirsts, terminals)) {
-        if (first !== 'ε') {
+        if (first !== '_EPS_') {
           if (table[lhs][first] === -1) {
             table[lhs][first] = pn;
           } else {
@@ -234,33 +250,64 @@ export class Parser {
    * parses an input string
    * @param input - the input string to parse
    * @returns true if the input is accepted by the grammar
+   * TODO: make this a pure function
    */
-  public parse(input: string): boolean {
-    input = input + '$';
-    const stack = ['$'];
+  public parse(input: Token[]): CST | boolean {
+    const parseTree = new CST({
+      payload: this.variables[0],
+      children: [],
+    });
+    const currentNode = parseTree.root;
+    const stack = ['EOF'];
     let i = 0;
     stack.push(this.variables[0]);
     while (stack.length > 0) {
-      const symbol = input[i];
+      const token = input[i];
       const top = stack.pop() as string;
-      if (!this.variables.includes(symbol) && !this.terminals.includes(symbol) && symbol !== '$')
-        return false;
+      if (
+        !this.variables.includes(token.type) &&
+        !this.terminals.includes(token.type) &&
+        token.type !== 'EOF'
+      ) {
+        if (!token.groups.some((group) => this.terminals.includes(`[${group}]`))) {
+          throw LiquidErrorInstance('Parser', `Undefined token \`${token.type}\``, token.start);
+        }
+      }
       if (this.variables.includes(top)) {
-        if (this.table[top][symbol] === -1) {
+        let reference = this.table[top][token.type];
+        if (reference === -1 || reference === undefined) {
+          for (const group of token.groups) {
+            reference = this.table[top][`[${group}]`] ?? -1;
+            if (reference !== -1) break;
+          }
+        }
+        if (reference === -1) {
           return false;
         } else {
-          const pn = this.table[top][symbol];
+          const pn = reference;
           const production = this.grammar[pn];
-          if (production.rhs[0] !== 'ε') stack.push(...production.rhs.toReversed());
+          if (production.rhs[0] !== '_EPS_') stack.push(...production.rhs.toReversed());
+          for (const symbol of production.rhs) {
+            const newNode: Node = {
+              payload: symbol,
+              children: [],
+            };
+            currentNode.children.push(newNode);
+          }
         }
       } else {
-        if (top !== symbol) {
-          return false;
+        if (top !== token.type && !token.groups.map((group) => `[${group}]`).includes(top)) {
+          throw LiquidErrorInstance('Parser', `Unexpected token \`${token.type}\``, token.start);
         } else {
           i++;
+          // add the token to the parse tree
+          currentNode.children.push({
+            payload: token.lexeme,
+            children: [],
+          });
         }
       }
     }
-    return true;
+    return parseTree;
   }
 }

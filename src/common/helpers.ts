@@ -27,5 +27,6 @@ export function LiquidErrorInstance(
   if (location) {
     content += ` at \x1b[33m: ${location}`;
   }
+  // TODO: must change this to process.exit(1) in the future
   return new Error(content);
 }

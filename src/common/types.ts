@@ -20,6 +20,8 @@ export interface Program {
 export type Production = {
   lhs: string;
   rhs: string[];
+  // a function that returns a node
+  parser?: (nodes: Node[]) => Node;
 };
 
 /**
