@@ -5,7 +5,7 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "clear;bun run --watch ./src/index.ts",
+    "dev": "clear;bun run --watch ./src/playground.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
     "format": "prettier --write '*/**/*.{ts,tsx,json}'"
