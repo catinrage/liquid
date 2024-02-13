@@ -1,178 +1,266 @@
-import { Pattern, Token } from '../common';
-import { LiquidErrorInstance } from '../common/helpers';
-import { Expression, StatementExpression, Program } from '../common/types';
+import type { Grammar } from '../common/types';
 
 /**
- * Represents a Parser class that is responsible for parsing tokens into an abstract syntax tree (AST).
+ * Represents a LL(1) parser.
  */
-export default class Parser {
-  public program: Program;
+export class Parser {
+  /**
+   * The grammar to be used for parsing.
+   */
+  private grammar: Grammar;
+  /**
+   * The firsts for each variable in the grammar.
+   */
+  private firsts: Record<string, string[]>;
+  /**
+   * The follows for each variable in the grammar.
+   */
+  private follows: Record<string, string[]>;
+  /**
+   * The variables in the grammar.
+   */
+  private variables: string[];
+  /**
+   * The terminals in the grammar.
+   */
+  private terminals: string[];
+  /**
+   * The parsing table for the grammar.
+   */
+  private table: Record<string, Record<string, number>>;
 
   /**
-   * Constructs a new instance of the Parser class.
-   * @param tokens - An array of tokens to be parsed.
-   * @param patterns - An array of patterns used for parsing.
+   * Creates a new instance of the Parser class.
+   * @param grammar The grammar to be used for parsing.
    */
-  constructor(private tokens: Token[], private patterns: readonly Pattern[]) {
-    this.program = {
-      type: 'Program',
-      body: [],
-    };
+  constructor(grammar: Grammar) {
+    this.grammar = grammar;
+
+    const { firsts, follows, variables, terminals } = this.derive(this.grammar);
+
+    this.firsts = firsts;
+    this.follows = follows;
+    this.variables = variables;
+    this.terminals = terminals;
+
+    this.table = this.createTable(grammar, firsts, follows, terminals);
   }
 
   /**
-   * Returns the next token without consuming it.
-   * @returns The next token.
-   * @throws Error if there are no more tokens.
+   * derives these values from the grammar: firsts, follows, variables, terminals
+   * @param grammar - the grammar to derive from
+   * @returns an object containing firsts, follows, variables, terminals
    */
-  private next(): Token & {
-    is: (flag: NonNullable<ConstructorParameters<typeof Pattern>[2]>[number]) => boolean;
-  } {
-    if (this.tokens.length === 0) {
-      throw new Error('Unexpected end of input');
+  private derive(grammar: Grammar) {
+    const variables = [...new Set(grammar.map((production) => production.lhs))];
+    const terminals = grammar
+      .map((production) => production.rhs)
+      .flat()
+      .filter((symbol) => !variables.includes(symbol))
+      .filter((symbol) => symbol !== 'ε')
+      .filter((symbol, index, arr) => arr.indexOf(symbol) === index);
+
+    const firsts: Record<string, string[]> = {};
+    const follows: Record<string, string[]> = {};
+
+    for (const variable of variables) {
+      firsts[variable] = [];
+      follows[variable] = [];
     }
-    return {
-      ...this.tokens[0],
-      is: (group: NonNullable<ConstructorParameters<typeof Pattern>[2]>[number]) => {
-        return this.patterns
-          .filter((pattern) => pattern.groups.includes(group))
-          .map((pattern) => pattern.name)
-          .includes(this.tokens[0].type);
-      },
-    };
+
+    // calculate first sets
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const production of grammar) {
+        const { lhs, rhs } = production;
+        for (let i = 0; i < rhs.length; i++) {
+          const symbol = rhs[i];
+          if (!variables.includes(symbol)) {
+            if (!firsts[lhs].includes(symbol)) {
+              firsts[lhs].push(symbol);
+              changed = true;
+            }
+            break;
+          } else {
+            const firstsOfSymbol = firsts[symbol];
+            if (firstsOfSymbol.includes('ε')) {
+              const oldLength = firsts[lhs].length;
+              firsts[lhs] = [
+                ...new Set([...firsts[lhs], ...firstsOfSymbol.filter((first) => first !== 'ε')]),
+              ];
+              if (firsts[lhs].length !== oldLength) {
+                changed = true;
+              }
+            } else {
+              const oldLength = firsts[lhs].length;
+              firsts[lhs] = [...new Set([...firsts[lhs], ...firstsOfSymbol])];
+              if (firsts[lhs].length !== oldLength) {
+                changed = true;
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // calculate follow sets
+    follows[grammar[0].lhs].push('$');
+    changed = true;
+    while (changed) {
+      changed = false;
+      for (const production of grammar) {
+        const { lhs, rhs } = production;
+        for (let i = 0; i < rhs.length; i++) {
+          const symbol = rhs[i];
+          if (variables.includes(symbol)) {
+            if (i === rhs.length - 1) {
+              const oldLength = follows[symbol].length;
+              follows[symbol] = [...new Set([...follows[symbol], ...follows[lhs]])];
+              if (follows[symbol].length !== oldLength) {
+                changed = true;
+              }
+            } else {
+              if (variables.includes(rhs[i + 1])) {
+                const firstsOfNext = firsts[rhs[i + 1]];
+                if (firstsOfNext.includes('ε')) {
+                  // Check if firstOfNext is defined
+                  const oldLength = follows[symbol].length;
+                  follows[symbol] = [
+                    ...new Set([
+                      ...follows[symbol],
+                      ...follows[rhs[i + 1]],
+                      ...firstsOfNext.filter((first) => first !== 'ε'),
+                    ]),
+                  ];
+                  if (follows[symbol].length !== oldLength) {
+                    changed = true;
+                  }
+                } else {
+                  // Check if firstOfNext is defined
+                  const oldLength = follows[symbol].length;
+                  follows[symbol] = [...new Set([...follows[symbol], ...firstsOfNext])];
+                  if (follows[symbol].length !== oldLength) {
+                    changed = true;
+                  }
+                }
+              } else {
+                if (!follows[symbol].includes(rhs[i + 1])) {
+                  follows[symbol].push(rhs[i + 1]);
+                  changed = true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return { firsts, follows, variables, terminals };
   }
 
   /**
-   * Returns the next token and consumes it.
-   * @returns The next token.
-   * @throws Error if there are no more tokens or if the next token is of type 'EOF'.
+   * calculates the firsts of a production rule (a series of symbols)
+   * @param production - an array of terminals
+   * @returns the firsts of the production
+   * @example calcFirsts('AB')
+   * @example calcFirsts('AxP')
    */
-  private advance(): Token {
-    if (this.next().type === 'EOF') {
-      throw new Error('Unexpected end of input');
+  private calcFirsts(production: string[], derivedFirsts: Record<string, string[]>, terminals: string[]) {
+    const calculatedFirsts: string[] = [];
+    if (production.length === 1 && production[0] === 'ε') {
+      return ['ε'];
     }
-    return this.tokens.shift() as unknown as Token;
+    for (const symbol of production) {
+      if (terminals.includes(symbol)) {
+        calculatedFirsts.push(symbol);
+        break;
+      } else {
+        const firstsOfSymbol = derivedFirsts[symbol];
+        if (firstsOfSymbol.includes('ε')) {
+          calculatedFirsts.push(...firstsOfSymbol.filter((first) => first !== 'ε'));
+        } else {
+          calculatedFirsts.push(...firstsOfSymbol);
+          break;
+        }
+      }
+    }
+    return calculatedFirsts;
   }
 
   /**
-   * Expects a token of the specified types and returns it.
-   * If the token type does not match any of the specified types, an error is thrown.
-   * @param types - An array of token types to expect.
-   * @returns The expected token.
-   * @throws {LiquidErrorInstance} If the token type does not match any of the specified types.
+   * generates the parsing table
+   * @returns the parsing table
    */
-  private expect(types: string[]): Token {
-    const token = this.next();
-    if (types.includes(token.type)) {
-      return this.advance();
+  private createTable(
+    grammar: Grammar,
+    derivedFirsts: Record<string, string[]>,
+    follows: Record<string, string[]>,
+    terminals: string[],
+  ) {
+    const table: Record<string, Record<string, number>> = {};
+
+    for (const [pn, production] of grammar.entries()) {
+      const { lhs, rhs } = production;
+      if (!table[lhs]) table[lhs] = {};
+      for (const terminal of [...terminals, '$']) {
+        if (!table[lhs][terminal]) table[lhs][terminal] = -1;
+      }
+
+      for (const first of this.calcFirsts(rhs, derivedFirsts, terminals)) {
+        if (first !== 'ε') {
+          if (table[lhs][first] === -1) {
+            table[lhs][first] = pn;
+          } else {
+            throw new Error('Grammar is not LL(1)');
+          }
+        } else {
+          for (const follow of follows[lhs]) {
+            if (table[lhs][follow] === -1) {
+              table[lhs][follow] = pn;
+            } else {
+              throw new Error('Grammar is not LL(1)');
+            }
+          }
+        }
+      }
     }
-    throw LiquidErrorInstance(
-      'Parser',
-      `Expected token of type ${types.join(' or ')}, but got ${token.type}`,
-      token.start,
-    );
+
+    return table;
   }
 
   /**
-   * Parses the tokens into an abstract syntax tree (AST).
+   * parses an input string
+   * @param input - the input string to parse
+   * @returns true if the input is accepted by the grammar
    */
-  parse(): void {
-    while (this.next().type !== 'EOF') {
-      this.program.body.push(this.parseStatementExpression());
+  public parse(input: string): boolean {
+    input = input + '$';
+    const stack = ['$'];
+    let i = 0;
+    stack.push(this.variables[0]);
+    while (stack.length > 0) {
+      const symbol = input[i];
+      const top = stack.pop() as string;
+      if (!this.variables.includes(symbol) && !this.terminals.includes(symbol) && symbol !== '$')
+        return false;
+      if (this.variables.includes(top)) {
+        if (this.table[top][symbol] === -1) {
+          return false;
+        } else {
+          const pn = this.table[top][symbol];
+          const production = this.grammar[pn];
+          if (production.rhs[0] !== 'ε') stack.push(...production.rhs.toReversed());
+        }
+      } else {
+        if (top !== symbol) {
+          return false;
+        } else {
+          i++;
+        }
+      }
     }
-  }
-
-  /**
-   * Parses an expression statement.
-   * @returns The parsed expression statement.
-   */
-  private parseStatementExpression(): StatementExpression {
-    const expression = this.parseExpression();
-    return {
-      type: 'StatementExpression',
-      expression,
-    };
-  }
-
-  /**
-   * Parses an expression.
-   * @returns The parsed expression.
-   */
-  private parseExpression(): Expression {
-    return this.parseBinaryExpression();
-  }
-
-  /**
-   * Parses a binary expression.
-   * @returns The parsed binary expression.
-   */
-  private parseBinaryExpression(): Expression {
-    let left = this.parseUnaryExpression();
-    while (this.next().is('Operator/Binary')) {
-      const operator = this.advance();
-      const right = this.parseUnaryExpression();
-      left = {
-        type: 'ExpressionBinary',
-        operator: operator.type,
-        left,
-        right,
-      };
-    }
-    return left;
-  }
-
-  /**
-   * Parses a unary expression.
-   * @returns The parsed unary expression.
-   */
-  private parseUnaryExpression(): Expression {
-    if (this.next().is('Operator/Unary')) {
-      const operator = this.advance();
-      const argument = this.parseUnaryExpression();
-      return {
-        type: 'ExpressionUnary',
-        operator: operator.type,
-        argument,
-      };
-    }
-    return this.parsePrimaryExpression();
-  }
-
-  /**
-   * Parses a primary expression.
-   * @returns The parsed primary expression.
-   * @throws LiquidErrorInstance if the next token is unexpected.
-   */
-  private parsePrimaryExpression(): Expression {
-    if (this.next().is('Literal')) {
-      const token = this.advance();
-      return {
-        type: 'Literal',
-        value: token.literal,
-        raw: token.lexeme,
-      };
-    }
-    if (this.next().type === 'IDENTIFIER') {
-      const token = this.advance();
-      return {
-        type: 'Identifier',
-        name: token.lexeme,
-      };
-    }
-    if (this.next().type === 'OPEN_PAREN') {
-      this.advance();
-      const expression = this.parseExpression();
-      this.expect(['CLOSE_PAREN']);
-      return expression;
-    }
-    throw LiquidErrorInstance('Parser', `Unexpected token ${this.next().type}`, this.next().start);
+    return true;
   }
 }
-
-/** G1:
- * Program -> Expression :SEMICOLON: Expression | Expression :SEMICOLON:
- * Expression -> ExpressionBinary | ExpressionUnary | PrimaryExpression
- * ExpressionBinary -> Expression [BinaryOperator] Expression
- * ExpressionUnary -> [UnaryOperator] Expression
- * PrimaryExpression -> [Literal] | :IDENTIFIER: | :OPEN_PAREN: Expression :CLOSE_PAREN:
- */
