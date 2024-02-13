@@ -20,7 +20,7 @@ const literals: Pattern[] = [
   ),
   new Pattern('STRING', /^"[^"\n]*"/, ['Literal'], (lexeme) => lexeme.slice(1, -1)),
   // regex that catches true or false :
-  new Pattern('Boolean', /^(true|false)$/, ['Literal']),
+  new Pattern('BOOLEAN', /^(true|false)$/, ['Literal']),
 ];
 
 /**
@@ -31,6 +31,7 @@ const literals: Pattern[] = [
  * @property {Pattern[]} arithmetic - Lexical patterns for arithmetic operators.
  * @property {Pattern[]} comparison - Lexical patterns for comparison operators.
  * @property {Pattern[]} logical - Lexical patterns for logical operators.
+ * TODO: must add order for operations somehow
  */
 const operators: Record<string, Pattern[]> = {
   arithmetic: [
