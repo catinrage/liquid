@@ -5,6 +5,7 @@ export class Token {
   /**
    * Creates a new Token instance.
    * @param type The type of the token.
+   * @param groups List of groups the token belongs to.
    * @param lexeme The lexeme of the token.
    * @param literal The literal value of the token.
    * @param start The start location of the token.
@@ -12,6 +13,7 @@ export class Token {
    */
   constructor(
     public type: string,
+    public groups: Pattern['groups'],
     public lexeme: string,
     public literal: unknown,
     public start: number,
