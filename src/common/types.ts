@@ -15,6 +15,19 @@ export interface Program {
 }
 
 /**
+ * Represents a production rule in the grammar.
+ */
+export type Production = {
+  lhs: string;
+  rhs: string[];
+};
+
+/**
+ * Represents the grammar.
+ */
+export type Grammar = Production[];
+
+/**
  * Represents a node in the program.
  *
  * @property type The type of the node.
@@ -79,6 +92,16 @@ export interface StatementExpression extends ExpressionInterface {
 }
 
 /**
+ * Represents a assignments expression.
+ */
+export interface ExpressionAssignment extends ExpressionInterface {
+  type: 'ExpressionAssignment';
+  operator: string;
+  left: Expression;
+  right: Expression;
+}
+
+/**
  * Represents a binary expression.
  */
 export interface ExpressionBinary extends ExpressionInterface {
@@ -117,6 +140,6 @@ export interface Literal extends ExpressionInterface {
 /**
  * Represents an expression.
  */
-export type Expression = ExpressionBinary | ExpressionUnary | Identifier | Literal;
+export type Expression = ExpressionAssignment | ExpressionBinary | ExpressionUnary | Identifier | Literal;
 
 export type ExpressionPrimary = Identifier | Literal;
