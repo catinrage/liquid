@@ -1,5 +1,3 @@
-import type { Location } from './types';
-
 /**
  * Represents a token in the lexer.
  */

@@ -1,5 +1,3 @@
-import { Location } from './types';
-
 /**
  * Wraps a value in an array if it is not already an array.
  * @param value - The value to wrap.
