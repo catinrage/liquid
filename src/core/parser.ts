@@ -1,14 +1,46 @@
 import { Pattern, Token } from '../common';
+import { LiquidErrorInstance } from '../common/helpers';
 import type { Grammar } from '../common/types';
+import chalk from 'chalk';
 
 type Node = {
-  value: string;
-  parent?: Node;
-  children: Node[];
+  value: Token | string;
+  children?: Node[];
 };
 
-export class CST {
+export class SyntaxTree {
   constructor(public root: Node) {}
+  public print(node: Node = this.root, indent: string = ''): void {
+    if (typeof node.value !== 'string') {
+      console.log(
+        indent + chalk.dim('├── ') + chalk.blue(node.value.type) + chalk.magenta(` [${node.value.lexeme}] `),
+      );
+    } else {
+      console.log(indent + chalk.dim('├── ') + chalk.white(node.value));
+    }
+    if (node.children) {
+      for (let i = 0; i < node.children.length; i++) {
+        let child = node.children[i];
+        if (i === node.children.length - 1) {
+          this.print(child, indent + '    ');
+        } else {
+          this.print(child, indent + chalk.dim('    '));
+        }
+      }
+    }
+  }
+}
+
+export class CST extends SyntaxTree {
+  constructor(root: Node) {
+    super(root);
+  }
+}
+
+export class AST extends SyntaxTree {
+  constructor(root: Node) {
+    super(root);
+  }
 }
 
 /**
@@ -19,26 +51,32 @@ export class Parser {
    * The grammar to be used for parsing.
    */
   private grammar: Grammar;
+
   /**
    * The patterns to be used for parsing.
    */
   private patterns: readonly Pattern[];
+
   /**
    * The firsts for each variable in the grammar.
    */
   private firsts: Record<string, string[]>;
+
   /**
    * The follows for each variable in the grammar.
    */
   private follows: Record<string, string[]>;
+
   /**
    * The variables in the grammar.
    */
   private variables: string[];
+
   /**
    * The terminals in the grammar.
    */
   private terminals: string[];
+
   /**
    * The parsing table for the grammar.
    */
@@ -221,7 +259,7 @@ export class Parser {
       const { lhs, rhs } = production;
       if (!table[lhs]) table[lhs] = {};
       for (const terminal of [...terminals, 'EOF']) {
-        if (!table[lhs][terminal]) table[lhs][terminal] = -1;
+        if (table[lhs][terminal] === undefined) table[lhs][terminal] = -1;
       }
 
       for (const first of this.calcFirsts(rhs, derivedFirsts, terminals)) {
@@ -252,19 +290,34 @@ export class Parser {
    * @returns true if the input is accepted by the grammar
    * TODO: make this a pure function
    */
-  public parse(input: Token[]): CST | boolean {
-    // we wan't to create parse tree here, and determine if grammar accepts the input array (recursive approach)
+  public parse(input: Token[]): { cst: CST; ast: AST } {
+    const cst = new CST({
+      value: this.grammar[0].lhs,
+      children: [],
+    });
+
+    let parents = [cst.root];
+
     const build = (input: Token[], stack: string[]): boolean => {
       if (input.length === 0) {
         return stack.length === 0;
       }
 
-      const top = stack.pop() as string;
+      const parent = parents.at(-1) as Node;
       const token = input[0];
+      const top = stack.pop() as string;
 
-      // console.log({ top, token });
+      // top is epsilon
+      if (top === '_EPS_') {
+        const child: Node = {
+          value: token,
+          children: [],
+        };
+        parents.pop();
+        return build(structuredClone(input), structuredClone(stack));
+      }
 
-      // top is a variable
+      // top is a non-terminal
       if (this.variables.includes(top)) {
         let reference = this.table[top][token.type] ?? -1;
         if (reference === -1) {
@@ -274,19 +327,44 @@ export class Parser {
           }
         }
         if (reference === -1) {
-          return false;
-          // throw LiquidErrorInstance('Parser', `Invalid token \`${token.type}\``, token.start);
+          const expectation: string[] = [];
+          for (const terminal in this.table[top]) {
+            if (this.table[top][terminal] !== -1) {
+              expectation.push(terminal);
+            }
+          }
+          throw LiquidErrorInstance(
+            'Parser',
+            `Invalid token \`${token.type}\`, expected ${expectation
+              .map((exp) => '`' + exp + '`')
+              .join(' or ')}`,
+            token.start,
+          );
         }
 
         const production = this.grammar[reference];
-        stack = [...stack, ...production.rhs.filter((symbol) => symbol !== '_EPS_').toReversed()];
-
+        parents.pop();
+        for (const symbol of production.rhs.toReversed()) {
+          const child: Node = {
+            value: symbol,
+            children: [],
+          };
+          parent && parent.children?.push(child);
+          parents.push(child);
+          stack = [...stack, symbol];
+        }
         return build(structuredClone(input), structuredClone(stack));
       }
 
       // top is a terminal
       if (top === token.type) {
+        // top is a token type
         input.shift();
+        if (token.type === 'EOF') {
+          return true;
+        }
+        parent.value = token;
+        parents.pop();
         return build(structuredClone(input), structuredClone(stack));
       } else {
         // top is a group name
@@ -298,20 +376,56 @@ export class Parser {
               break;
             }
           }
-
           if (accepted) {
             input.shift();
+            parent.value = token;
+            parents.pop();
             return build(structuredClone(input), structuredClone(stack));
-          } else {
-            return false;
-            // throw LiquidErrorInstance('Parser', `Invalid token \`${token.type}\``, token.start);
           }
         }
-        return false;
-        // throw LiquidErrorInstance('Parser', `Invalid token \`${token.type}\``, token.start);
       }
+      throw LiquidErrorInstance('Parser', `Invalid token \`${token.type}\``, token.start);
     };
 
-    return build(input, ['EOF', this.grammar[0].lhs]);
+    build(input, ['EOF', this.grammar[0].lhs]);
+
+    // create AST from CST
+    const ast = new AST(structuredClone(cst.root));
+
+    function prune(node: Node) {
+      if (node.children) {
+        for (const child of node.children) {
+          // remove all epsilon nodes and remove it if it belongs to punctuation group
+          if (typeof child.value === 'string' && child.value === '_EPS_') {
+            const index = node.children.indexOf(child);
+            node.children.splice(index, 1);
+          }
+          if (typeof child.value !== 'string' && child.value.groups?.includes('Punctuation')) {
+            const index = node.children.indexOf(child);
+            node.children.splice(index, 1);
+          }
+          prune(child);
+        }
+        for (const child of node.children) {
+          // remove all nodes that are not token and have no children
+          if (typeof child.value === 'string' && child.children?.length === 0) {
+            const index = node.children.indexOf(child);
+            node.children.splice(index, 1);
+          }
+          prune(child);
+        }
+        // now reduce indention if it only has one child, example :
+        // A -> B -> C should become : A -> C
+        if (node.children.length === 1) {
+          const child = node.children[0];
+          node.value = child.value;
+          node.children = child.children;
+        }
+      }
+    }
+
+    prune(ast.root);
+
+    return { cst, ast };
   }
 }

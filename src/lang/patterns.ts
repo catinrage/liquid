@@ -27,7 +27,6 @@ const literals: Pattern[] = [
  * Lexical patterns for operators grouped into categories: arithmetic, comparison, and logical.
  * Each category is represented as an array of `Pattern` objects.
  *
- * @typedef {Object} Operators
  * @property {Pattern[]} arithmetic - Lexical patterns for arithmetic operators.
  * @property {Pattern[]} comparison - Lexical patterns for comparison operators.
  * @property {Pattern[]} logical - Lexical patterns for logical operators.
@@ -73,17 +72,17 @@ const operators: Record<string, Pattern[]> = {
  * @type {Pattern[]}
  */
 const punctuations: Pattern[] = [
-  new Pattern('OPEN_PAREN', /^\($/),
-  new Pattern('CLOSE_PAREN', /^\)$/),
-  new Pattern('OPEN_BRACE', /^\{$/),
-  new Pattern('CLOSE_BRACE', /^\}$/),
-  new Pattern('OPEN_BRACKET', /^\[$/),
-  new Pattern('CLOSE_BRACKET', /^\]$/),
-  new Pattern('COMMA', /^,$/),
-  new Pattern('DOT', /^\.$/),
-  new Pattern('COLON', /^:$/),
-  new Pattern('SEMICOLON', /^;$/),
-  new Pattern('EOF', /^\0$/),
+  new Pattern('OPEN_PAREN', /^\($/, ['Punctuation']),
+  new Pattern('CLOSE_PAREN', /^\)$/, ['Punctuation']),
+  new Pattern('OPEN_BRACE', /^\{$/, ['Punctuation']),
+  new Pattern('CLOSE_BRACE', /^\}$/, ['Punctuation']),
+  new Pattern('OPEN_BRACKET', /^\[$/, ['Punctuation']),
+  new Pattern('CLOSE_BRACKET', /^\]$/, ['Punctuation']),
+  new Pattern('COMMA', /^,$/, ['Punctuation']),
+  new Pattern('DOT', /^\.$/, ['Punctuation']),
+  new Pattern('COLON', /^:$/, ['Punctuation']),
+  new Pattern('SEMICOLON', /^;$/, ['Punctuation']),
+  new Pattern('EOF', /^\0$/, ['Punctuation']),
 ];
 
 /**
