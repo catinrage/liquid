@@ -1,4 +1,4 @@
-import { Pattern } from '../common';
+import { Pattern } from '$core/lexer/pattern';
 
 /**
  * Lexical pattern for characters to be omitted.

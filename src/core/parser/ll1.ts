@@ -1,6 +1,7 @@
-import { Pattern, Token } from '../common';
-import { LiquidErrorInstance } from '../common/helpers';
-import type { Grammar } from '../common/types';
+import type { Pattern } from '$core/lexer/pattern';
+import type { Token } from '$core/lexer/token';
+import { LiquidErrorInstance } from '$common/helpers';
+import type { Grammar } from '$common/types';
 import chalk from 'chalk';
 
 type Node = {
@@ -46,7 +47,7 @@ export class AST extends SyntaxTree {
 /**
  * Represents a LL(1) parser.
  */
-export class Parser {
+export class LL1Parser {
   /**
    * The grammar to be used for parsing.
    */

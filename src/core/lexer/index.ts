@@ -1,5 +1,6 @@
-import { Token, Pattern } from '../common';
-import { wrapInArray, LiquidErrorInstance } from '../common/helpers';
+import type { Pattern } from './pattern';
+import type { Token } from './token';
+import { wrapInArray, LiquidErrorInstance } from '$common/helpers';
 
 /**
  * Represents a lexer that tokenizes input strings based on provided patterns.
@@ -35,6 +36,7 @@ class Lexer {
   /**
    * Tokenizes a batch of the input string.
    * @param batch The batch of the input string to be tokenized.
+   * @param location The location of the batch in the input string.
    * @returns A Token object representing the tokenized batch, or null if no match is found.
    */
   private tokenizeBatch(batch: string, location: number): Token | null {

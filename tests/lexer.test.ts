@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'bun:test';
-import Lexer from '../src/core/lexer';
+import Lexer from './core/lexer';
 import patterns from '../src/lang/patterns';
 
 const L1 = new Lexer(`1 + "hello";`, patterns);

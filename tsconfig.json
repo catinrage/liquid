@@ -1,14 +1,38 @@
 {
   "compilerOptions": {
+    // Enable latest features
     "target": "ESNext",
     "module": "ES2022",
-    "moduleResolution": "Node",
-    "strict": true,
     "esModuleInterop": true,
-    "outDir": "dist",
-    "types": ["bun-types"],
-    "lib": ["ESNext.Array"]
-  },
-  "include": ["src/**/*.ts", "tests/**/*.test.ts", "sandbox/main.li"],
-  "exclude": ["node_modules"]
+    "allowSyntheticDefaultImports": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
+    // Bundler mode
+    "moduleResolution": "Node",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+
+    "types": ["node", "bun-types"],
+
+    "rootDirs": ["./src", "./tests", "./sandbox"],
+
+    "paths": {
+      "$core/*": ["./src/core/*"],
+      "$common/*": ["./src/common/*"]
+    }
+  }
 }

@@ -1,10 +1,1 @@
-Program                     -> Statement
-Statement                   -> Expression SEMICOLON Statement | _EPS_
-Expression                  -> AdditiveExpression | _EPS_
-AdditiveExpression          -> MultiplicativeExpression B
-B                           -> PLUS MultiplicativeExpression B | MINUS MultiplicativeExpression B | _EPS_
-MultiplicativeExpression    -> UnaryExpression A
-A                           -> MULTIPLY UnaryExpression A | DIVIDE UnaryExpression A | _EPS_
-UnaryExpression             -> MINUS UnaryExpression | PrimaryExpression
-PrimaryExpression           -> ParenthesizedExpression | NUMBER
-ParenthesizedExpression     -> OPEN_PAREN Expression CLOSE_PAREN
+Program -> Program | [Literal] [Operator/Binary] [Literal]
