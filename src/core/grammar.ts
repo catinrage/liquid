@@ -1,3 +1,5 @@
+class SpecialSign extends String {}
+
 export class GrammarProductionRule {
   constructor(
     /**
@@ -7,7 +9,7 @@ export class GrammarProductionRule {
     /**
      * The right-hand side of the rule.
      */
-    public readonly rhs: (string | symbol)[],
+    public readonly rhs: string[],
   ) {}
 }
 
@@ -16,10 +18,12 @@ export class Grammar {
    * Special signs used in the grammar.
    */
   static readonly SIGNS = {
+    // The reason why we use a custom class for this sign is to avoid conflicts with other strings
+    // For example 'hi' !== new String('hi')
     // Epsilon sign (aka λ sign in some grammars)
-    EPSILON: Symbol('EPSILON'),
+    EPSILON: new String('ε') as string,
     // End of input sign (aka $ sign in some grammars)
-    EOI: Symbol('EOI'),
+    EOI: new String('$') as string,
   } as const;
 
   constructor(
@@ -27,19 +31,22 @@ export class Grammar {
      * List of production rules in the grammar.
      */
     public readonly rules: GrammarProductionRule[],
-  ) {
-    this.terminals.push(Grammar.SIGNS.EPSILON);
-    // this.validate();
-  }
+  ) {}
 
+  /**
+   * Returns the list of variables in the grammar.
+   */
   public get variables(): string[] {
     return [...new Set(this.rules.map((rule) => rule.lhs))];
   }
 
-  public get terminals(): (string | symbol)[] {
-    return this.rules.reduce((terminals, rule) => {
-      return terminals.concat(rule.rhs.filter((symbol) => !this.isVariable(symbol)));
-    }, [] as (string | symbol)[]);
+  /**
+   * Returns the list of terminals in the grammar.
+   */
+  public get terminals(): string[] {
+    return [
+      ...new Set(this.rules.flatMap((rule) => rule.rhs).filter((symbol) => symbol !== Grammar.SIGNS.EPSILON)),
+    ].filter((symbol) => !this.isVariable(symbol as string));
   }
 
   /**
@@ -92,24 +99,24 @@ export class Grammar {
   /**
    * Checks if a symbol is a terminal.
    */
-  public isTerminal(symbol: string | symbol) {
+  public isTerminal(symbol: string) {
     return this.terminals.includes(symbol);
   }
 
   /**
    * Checks if a symbol is a variable.
    */
-  public isVariable(symbol: string | symbol): symbol is string {
+  public isVariable(symbol: string) {
     return this.variables.includes(symbol as string);
   }
 
   /**
    * Returns the first set of each variable in the grammar.
    */
-  public get firsts(): Record<string, (string | symbol)[]> {
+  public get firsts(): Record<string, string[]> {
     const { variables } = this;
     // create an empty placeholder for the firsts set
-    let firsts: Record<string, (string | symbol)[]> = {};
+    let firsts: Record<string, string[]> = {};
     // initial the set
     for (const variable of variables) {
       firsts[variable] = [];
@@ -165,8 +172,8 @@ export class Grammar {
   /**
    * Returns the first set of a sequence of symbols.
    */
-  public firstOfSequence(sequence: string[]): (string | symbol)[] {
-    const firsts: (string | symbol)[] = [];
+  public firstOfSequence(sequence: string[]): string[] {
+    const firsts: string[] = [];
     for (const symbol of sequence) {
       if (!this.isVariable(symbol)) {
         if (!firsts.includes(symbol)) {
@@ -194,10 +201,10 @@ export class Grammar {
   /**
    * Returns the follow set of each variable in the grammar.
    */
-  public get follows(): Record<string, (string | symbol)[]> {
+  public get follows(): Record<string, string[]> {
     const { variables, firsts } = this;
     // create an empty placeholder for the follows set
-    const follows: Record<string, (string | symbol)[]> = {};
+    const follows: Record<string, string[]> = {};
     // initial the set
     for (const variable of variables) {
       follows[variable] = [];

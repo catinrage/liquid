@@ -1,1 +1,1 @@
-Program -> Program | [Literal] [Operator/Binary] [Literal]
+Program -> [Literal] | Program [Operator/Binary] [Literal]
