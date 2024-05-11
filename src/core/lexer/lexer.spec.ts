@@ -1,6 +1,7 @@
-import { test, expect, describe } from 'bun:test';
+import { test, expect, describe } from 'vitest';
 import Lexer from '$core/lexer';
-import patterns from '../src/lang/patterns';
+import patterns from '../../lang/patterns';
+import { Grammar } from '$core/grammar';
 
 const L1 = new Lexer(`1 + "hello";`, patterns);
 const L2 = new Lexer(`-6 + -8`, patterns);
@@ -20,13 +21,13 @@ describe('Lexer/Tokenizer', () => {
     expect(L1.tokens[1].type).toBe('PLUS');
     expect(L1.tokens[2].type).toBe('STRING');
     expect(L1.tokens[3].type).toBe('SEMICOLON');
-    expect(L1.tokens[4].type).toBe('EOF');
+    expect(L1.tokens[4].type).toBe(Grammar.SIGNS.EOI);
     expect(L2.tokens[0].type).toBe('MINUS');
     expect(L2.tokens[1].type).toBe('NUMBER');
     expect(L2.tokens[2].type).toBe('PLUS');
     expect(L2.tokens[3].type).toBe('MINUS');
     expect(L2.tokens[4].type).toBe('NUMBER');
-    expect(L2.tokens[5].type).toBe('EOF');
+    expect(L2.tokens[5].type).toBe(Grammar.SIGNS.EOI);
   });
   test('tokens lexeme check', () => {
     expect(L1.tokens[0].lexeme).toBe('1');

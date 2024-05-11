@@ -1,5 +1,3 @@
-class SpecialSign extends String {}
-
 export class GrammarProductionRule {
   constructor(
     /**
@@ -18,12 +16,12 @@ export class Grammar {
    * Special signs used in the grammar.
    */
   static readonly SIGNS = {
-    // The reason why we use a custom class for this sign is to avoid conflicts with other strings
-    // For example 'hi' !== new String('hi')
     // Epsilon sign (aka λ sign in some grammars)
-    EPSILON: new String('ε') as string,
+    EPSILON: '__LIQUID_RESERVED_EPSILON__',
     // End of input sign (aka $ sign in some grammars)
-    EOI: new String('$') as string,
+    EOI: '__LIQUID_RESERVED_EOI__',
+    // The augmented start symbol sign
+    AUG: `__LIQUID_RESERVED_AUG__`,
   } as const;
 
   constructor(
@@ -34,7 +32,7 @@ export class Grammar {
   ) {}
 
   /**
-   * Returns the list of variables in the grammar.
+   * Returns the list of variables (non-terminals) in the grammar.
    */
   public get variables(): string[] {
     return [...new Set(this.rules.map((rule) => rule.lhs))];
@@ -47,53 +45,6 @@ export class Grammar {
     return [
       ...new Set(this.rules.flatMap((rule) => rule.rhs).filter((symbol) => symbol !== Grammar.SIGNS.EPSILON)),
     ].filter((symbol) => !this.isVariable(symbol as string));
-  }
-
-  /**
-   * Validates the grammar.
-   * The grammar must have at least one rule, one variable, one terminal, one rule with a variable in the left-hand side,
-   * one rule with a terminal in the right-hand side, and one rule with a variable in the right-hand side.
-   * It also checks if the grammar has any invalid symbols.
-   */
-  public validate() {
-    const { variables, terminals, rules } = this;
-    // Check if the grammar has at least one rule
-    if (rules.length === 0) {
-      throw new Error('The grammar must have at least one rule.');
-    }
-    // Check if the grammar has at least one variable
-    if (variables.length === 0) {
-      throw new Error('The grammar must have at least one variable.');
-    }
-    // Check if the grammar has at least one terminal
-    if (terminals.length === 0) {
-      throw new Error('The grammar must have at least one terminal.');
-    }
-    // Check if the grammar has at least one rule with a variable in the left-hand side
-    if (!rules.some((rule) => this.isVariable(rule.lhs))) {
-      throw new Error('The grammar must have at least one rule with a variable in the left-hand side.');
-    }
-    // Check if the grammar has at least one rule with a terminal in the right-hand side
-    if (!rules.some((rule) => rule.rhs.some((symbol) => this.isTerminal(symbol)))) {
-      throw new Error('The grammar must have at least one rule with a terminal in the right-hand side.');
-    }
-    // Check if the grammar has at least one rule with a variable in the right-hand side
-    if (!rules.some((rule) => rule.rhs.some((symbol) => this.isVariable(symbol)))) {
-      throw new Error('The grammar must have at least one rule with a variable in the right-hand side.');
-    }
-
-    // check if any invalid symbols are used in the grammar
-    for (const rule of rules) {
-      const { lhs, rhs } = rule;
-      if (!this.isVariable(lhs)) {
-        throw new Error(`Invalid variable "${lhs}" in the left-hand side of the rule.`);
-      }
-      for (const symbol of rhs) {
-        if (!this.isVariable(symbol) && !this.isTerminal(symbol)) {
-          throw new Error(`Invalid symbol "${symbol.toString()}" in the right-hand side of the rule.`);
-        }
-      }
-    }
   }
 
   /**

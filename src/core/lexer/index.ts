@@ -1,6 +1,7 @@
 import type { Pattern } from './pattern';
 import type { Token } from './token';
 import { wrapInArray, LiquidErrorInstance } from '$common/helpers';
+import { Grammar } from '$core/grammar';
 
 /**
  * Represents a lexer that tokenizes input strings based on provided patterns.
@@ -93,7 +94,7 @@ class Lexer {
       }
     }
     tokens.push({
-      type: 'EOF',
+      type: Grammar.SIGNS.EOI,
       groups: [],
       lexeme: '\0',
       literal: {},

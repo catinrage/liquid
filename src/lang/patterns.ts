@@ -36,7 +36,7 @@ const operators: Record<string, Pattern[]> = {
   arithmetic: [
     new Pattern('PLUS', /^\+$/, ['Operator/Binary', 'Operator/Unary']),
     new Pattern('MINUS', /^-$/, ['Operator/Binary', 'Operator/Unary']),
-    new Pattern('MULTIPLY', /^\*$/, ['Operator/Binary']),
+    new Pattern('TIMES', /^\*$/, ['Operator/Binary']),
     new Pattern('DIVIDE', /^\/$/, ['Operator/Binary']),
     new Pattern('MODULO', /^%$/, ['Operator/Binary']),
     new Pattern('POWER', /^\^$/, ['Operator/Binary']),

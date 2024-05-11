@@ -2,13 +2,6 @@
  * Represents a pattern used for matching and parsing lexemes.
  */
 export class Pattern {
-  /**
-   * Creates a new instance of the Pattern class.
-   * @param name The name of the pattern.
-   * @param regex The regular expression used for matching.
-   * @param groups The terms used for grouping patterns.
-   * @param parser The function used for parsing the matched lexeme.
-   */
   constructor(
     /**
      * The name of the pattern.
@@ -17,11 +10,14 @@ export class Pattern {
      * @example 'NUMBER' | 'STRING' | 'PLUS' | 'MINUS' | 'ASSIGN'
      */
     public readonly name: 'OMITTED' | (string & Record<never, never>),
+
     /**
      * The regular expression used for matching the lexeme.
+     * can be a single regex or an array of them.
      * @example /^\d+$/ | /^"([^"]*)"$/
      */
     public readonly regex: RegExp | RegExp[],
+
     /**
      * The groups the pattern belongs to.
      * Grouping patterns can be useful when creating grammars.
@@ -38,6 +34,7 @@ export class Pattern {
       | 'Punctuation'
       | 'Junk'
     )[] = [],
+
     /**
      * The function used for parsing the matched lexeme.
      * @example (lexeme) => parseInt(lexeme) ; for numbers
