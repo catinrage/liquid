@@ -1,5 +1,0 @@
-Program               -> Statement
-Statement             -> Expression SEMICOLON Statement | _EPS_
-Expression            -> BinaryExpression
-BinaryExpression      -> [Literal] A
-A                     -> [Operator/Binary] BinaryExpression | _EPS_

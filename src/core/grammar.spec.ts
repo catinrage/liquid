@@ -91,32 +91,32 @@ describe('Grammar Class', () => {
 
   test('properly calculates and returns set of follow symbols for each variable', () => {
     expect(s1.follows).toEqual({
-      S: [Grammar.SIGNS.EOI],
+      S: [Grammar.SIGNS.EOF],
       A: ['b'],
     });
 
     expect(s2.follows).toEqual({
-      E: [Grammar.SIGNS.EOI, '+', ')'],
-      T: [Grammar.SIGNS.EOI, '+', '*', ')'],
-      F: [Grammar.SIGNS.EOI, '+', '*', ')'],
+      E: [Grammar.SIGNS.EOF, '+', ')'],
+      T: [Grammar.SIGNS.EOF, '+', '*', ')'],
+      F: [Grammar.SIGNS.EOF, '+', '*', ')'],
     });
 
     expect(s3.follows).toEqual({
-      S: [Grammar.SIGNS.EOI],
-      X: ['a', 'b', Grammar.SIGNS.EOI],
+      S: [Grammar.SIGNS.EOF],
+      X: ['a', 'b', Grammar.SIGNS.EOF],
     });
 
     expect(s4.follows).toEqual({
-      S: [Grammar.SIGNS.EOI],
+      S: [Grammar.SIGNS.EOF],
       A: ['a', 'b'],
       B: ['b', 'a'],
     });
 
     expect(s5.follows).toEqual({
-      A: [Grammar.SIGNS.EOI],
+      A: [Grammar.SIGNS.EOF],
       B: ['c'],
       C: ['c', 'd'],
-      D: [Grammar.SIGNS.EOI],
+      D: [Grammar.SIGNS.EOF],
     });
   });
 

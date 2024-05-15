@@ -1,16 +1,62 @@
+import type { Pattern } from './lexer/pattern';
+
+/**
+ * Represents a production rule in a context-free grammar.
+ */
 export class GrammarProductionRule {
+  /**
+   * The left-hand side of the rule.
+   */
+  public readonly lhs: string;
+
+  /**
+   * The right-hand side of the rule.
+   */
+  public readonly rhs: string[];
+
+  /**
+   * The semantic action of the rule, which is a function that is called when the rule is reduced.
+   * This is used to evaluate a value from the rule.
+   */
+  public action: (...data: any[]) => any;
+
+  /**
+   * Special semantic actions used in the grammar.
+   */
+  static ACTIONS = {
+    PASS: (index: number = 0) => {
+      return (...data: any[]) => data[index];
+    },
+  };
+
   constructor(
-    /**
-     * The left-hand side of the rule.
-     */
-    public readonly lhs: string,
-    /**
-     * The right-hand side of the rule.
-     */
-    public readonly rhs: string[],
-  ) {}
+    lhs: string,
+    rhs: string | string[],
+    action: (...data: any[]) => any = GrammarProductionRule.ACTIONS.PASS(),
+  ) {
+    this.lhs = lhs;
+    this.rhs = Array.isArray(rhs) ? rhs : rhs.split(' ');
+    this.action = action;
+  }
+
+  /**
+   * Returns the rule in a human-readable format.
+   */
+  toString(): string {
+    return `${this.lhs} -> ${this.rhs.join(' ')}`;
+  }
+
+  /**
+   * Checks if the rule is equal to given rule.
+   */
+  isEqualTo(other: GrammarProductionRule) {
+    return this.lhs === other.lhs && this.rhs.join(' ') === other.rhs.join(' ');
+  }
 }
 
+/**
+ * Represents a context-free grammar.
+ */
 export class Grammar {
   /**
    * Special signs used in the grammar.
@@ -18,9 +64,9 @@ export class Grammar {
   static readonly SIGNS = {
     // Epsilon sign (aka λ sign in some grammars)
     EPSILON: '__LIQUID_RESERVED_EPSILON__',
-    // End of input sign (aka $ sign in some grammars)
-    EOI: '__LIQUID_RESERVED_EOI__',
-    // The augmented start symbol sign
+    // End of file sign (aka $ sign in some grammars)
+    EOF: '__LIQUID_RESERVED_EOF__',
+    // The augmented start symbol sign (aka S' sign in some grammars)
     AUG: `__LIQUID_RESERVED_AUG__`,
   } as const;
 
@@ -29,7 +75,48 @@ export class Grammar {
      * List of production rules in the grammar.
      */
     public readonly rules: GrammarProductionRule[],
-  ) {}
+    /**
+     * Array of patterns used in the grammar.
+     * These patterns are used to populate rules that use groups instead of token names.
+     */
+    public readonly patterns: Pattern[] = [],
+  ) {
+    if (patterns.length) {
+      for (const rule of this.rules) {
+        if (rule.rhs.findIndex((symbol) => symbol.startsWith('[') && symbol.endsWith(']')) >= 0) {
+          const populated = this._populate(rule);
+          this.rules.push(...populated);
+        }
+      }
+      // remove all rules that contain groups
+      this.rules = this.rules.filter((rule) => {
+        return rule.rhs.every((r) => !r.startsWith('['));
+      });
+    }
+  }
+
+  private _populate(rule: GrammarProductionRule): GrammarProductionRule[] {
+    // check if rule contains a group
+    // groups are used in a grammar in `[GroupName]` format
+    const groupIndex = rule.rhs.findIndex((symbol, index) => symbol.startsWith('[') && symbol.endsWith(']'));
+    if (groupIndex !== -1) {
+      const group = rule.rhs[groupIndex].slice(1, -1);
+      // find the pattern that matches the group
+      const patterns = this.patterns.filter((pattern) => pattern.groups.includes(group));
+      const populated = [];
+      // populate the rule with the patterns
+      for (const pattern of patterns) {
+        // replace the group with the pattern name and populate the rule again
+        const newRhs = [...rule.rhs];
+        newRhs.splice(groupIndex, 1, pattern.name);
+        populated.push(...this._populate(new GrammarProductionRule(rule.lhs, newRhs, rule.action)));
+      }
+
+      return [...populated];
+    } else {
+      return [rule];
+    }
+  }
 
   /**
    * Returns the list of variables (non-terminals) in the grammar.
@@ -161,7 +248,7 @@ export class Grammar {
       follows[variable] = [];
     }
     // calculate follow sets
-    follows[this.rules[0].lhs].push(Grammar.SIGNS.EOI);
+    follows[this.rules[0].lhs].push(Grammar.SIGNS.EOF);
     let changed = true;
     while (changed) {
       changed = false;
