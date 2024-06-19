@@ -3,7 +3,7 @@ import ViteTsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   test: {
-    include: ['src/**/*.spec.ts'],
+    include: ['tests/**/*.spec.ts'],
     sequence: {
       concurrent: true,
       hooks: 'list',

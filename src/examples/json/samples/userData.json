@@ -1,0 +1,389 @@
+{
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z",
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "is_verified": true,
+    "height": 5.9,
+    "birth_date": "1994-05-18",
+    "address": {
+      "city": "New York",
+      "street": "123 Main St",
+      "zipcode": "10001",
+      "coordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      }
+    },
+    "contacts": [
+      {
+        "type": "email",
+        "value": "john.doe@example.com"
+      },
+      {
+        "type": "phone",
+        "value": "+1 (555) 555-5555"
+      }
+    ],
+    "skills": ["JavaScript", "Python", "SQL"],
+    "bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "items": [
+    {
+      "name": "Item 1",
+      "price": 10.99,
+      "quantity": 2
+    },
+    {
+      "name": "Item 2",
+      "price": 24.99,
+      "quantity": 1
+    }
+  ],
+  "total": 46.97,
+  "timestamp": "2024-05-18T12:00:00Z"
+}

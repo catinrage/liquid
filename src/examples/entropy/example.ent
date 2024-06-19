@@ -1,0 +1,43 @@
+Machine User:
+  initial state LoggedOut:
+    on event login:
+      transition to LoggedIn
+    on event register:
+      transition to LoggedIn
+
+  state LoggedIn:
+    on event logout:
+      transition to LoggedOut
+
+Machine Storage:
+  actions:
+    read:
+      print("reading")
+    write:
+      print("writing")
+
+  initial state Idle:
+    on event read:
+      transition to Reading
+    on event write:
+      transition to Writing
+
+  state Reading:
+    after 1s:
+      transition to Idle
+
+  state Writing:
+    after 1s:
+      transition to Idle
+
+Machine Application:
+  uses:
+    User
+    Storage
+
+  # here we say in the application machine, if user is logged in, expose the storage machine in the idle state 
+  when User.LoggedIn:
+    expose Storage.Idle
+
+  when User.LoggedOut:
+    expose User.LoggedOut

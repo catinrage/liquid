@@ -25,10 +25,15 @@ export class Token {
     public readonly lexeme: string,
 
     /**
-     * The precedence and associativity of the pattern.
+     * The precedence and associativity of the token.
      */
     public readonly precedence: PatternPrecedenceType | undefined,
     public readonly associativity: PatternAssociativityType | undefined,
+
+    /**
+     *  A flag that determines whether the token should be ignored.
+     */
+    public readonly ignored: boolean = false,
 
     /**
      * The literal value of the token (parsed value).
@@ -39,11 +44,17 @@ export class Token {
     /**
      * The start location of the token.
      */
-    public readonly start: number,
+    public readonly start: {
+      line: number;
+      character: number;
+    },
 
     /**
      * The end location of the token.
      */
-    public readonly end: number,
+    public readonly end: {
+      line: number;
+      character: number;
+    },
   ) {}
 }

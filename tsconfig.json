@@ -32,7 +32,9 @@
 
     "paths": {
       "$core/*": ["./src/core/*"],
-      "$common/*": ["./src/common/*"]
+      "$common/*": ["./src/common/*"],
+      "$tools/*": ["./src/tools/*"],
+      "$examples/*": ["./src/examples/*"]
     }
   }
 }

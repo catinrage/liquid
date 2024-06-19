@@ -1,0 +1,8 @@
+var t = 0;
+var i = 5;
+
+for (t <= i;t = t + 1) {
+  var x;
+};
+
+>> t * 2 + 3;

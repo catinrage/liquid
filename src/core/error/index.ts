@@ -1,17 +1,20 @@
+import type { Token } from '$core/lexer';
+import type { TokenLocation } from '$core/lexer/lexer';
+
 export class LiquidErrorInstance extends Error {
-  constructor(stage: 'Lexer' | 'Parser', message: string, location?: number) {
-    super(`[${stage} Error] : ${message} ${location ? `at : ${location}` : ''}`);
+  constructor(public stage: 'Syntax' | 'Parser', message: string, public location?: TokenLocation) {
+    super(`${message} ${location ? `at : ${location.line}:${location.character}` : ''}`);
   }
 }
 
-export class LiquidLexerError extends LiquidErrorInstance {
-  constructor(message: string, location: number) {
-    super('Lexer', message, location);
+export class LiquidSyntaxError extends LiquidErrorInstance {
+  constructor(message: string, location: TokenLocation, public suggestions?: string[]) {
+    super('Syntax', message, location);
   }
 }
 
 export class LiquidParserError extends LiquidErrorInstance {
-  constructor(message: string, location?: number) {
-    super('Parser', message, location);
+  constructor(message: string, public token?: Token) {
+    super('Parser', message);
   }
 }

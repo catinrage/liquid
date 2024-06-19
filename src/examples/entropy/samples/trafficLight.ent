@@ -1,0 +1,14 @@
+Machine Door:
+  routine open:
+    pass
+  routine close:
+    pass
+
+  initial state Open:
+    on next:
+      goto Close
+  state Closed:
+    on next:
+      goto Open
+    on entry:
+      pass

@@ -1,0 +1,10 @@
+{
+  "address": {
+    "street": "123 Main St",
+    "city": "Springfield",
+    "state": "IL",
+    "zip": "62701",
+    "country": null
+  },
+  "alias": "test"
+}

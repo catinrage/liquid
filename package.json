@@ -8,7 +8,8 @@
     "dev": "clear;bun run  ./src/playground.ts",
     "test": "bun run vitest",
     "lint": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
-    "format": "prettier --write '*/**/*.{ts,tsx,json}'"
+    "format": "prettier --write '*/**/*.{ts,tsx,json}'",
+    "build": "bun run build.mjs"
   },
   "keywords": [],
   "author": "",
@@ -17,9 +18,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "bun-types": "^1.0.12",
-    "chalk": "^5.3.0",
     "chokidar": "^3.6.0",
-    "console-table-printer": "^2.12.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -27,5 +26,9 @@
     "typescript": "^5.2",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5"
   }
 }
